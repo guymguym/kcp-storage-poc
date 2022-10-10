@@ -1,6 +1,6 @@
-source $(dirname $0)/env.sh
+source "$(dirname $0)/env.sh"
 
-rm -rf .kcp/ .kind/
+rm -rf .kcp/
+
 podman rm -f kind-control-plane
-kind create cluster --kubeconfig $KC1
-kind export kubeconfig --kubeconfig $KC1
+kind create cluster

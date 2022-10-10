@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  labels:
+    app: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+        - name: app1
+          image: bitnami/dokuwiki
+          command:
+            - bash
+            - "-c"
+            - |
+              echo 'Mutex posixsem' >>/opt/bitnami/apache2/conf/httpd.conf;
+              /opt/bitnami/scripts/dokuwiki/entrypoint.sh /opt/bitnami/scripts/apache/run.sh
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: data-volume
+              mountPath: /bitnami/dokuwiki
+          env:
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: data-volume
