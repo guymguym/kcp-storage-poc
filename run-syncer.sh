@@ -11,34 +11,30 @@ YAML="${PWD}/.kcp/syncer-${NAME}.yaml"
 CTX="kind-kind"
 WS="root:tmc:demo"
 
+RESOURCES_LONG="--resources=deployments.apps --resources=services --resources=persistentvolumeclaims"
+RESOURCES_SHORT="--resources=deployments.apps,services,persistentvolumeclaims"
+
 echo "[DEBUG] NAME = $NAME"
 echo "[DEBUG] CTX  = $CTX"
 echo "[DEBUG] WS   = $WS"
 
-
-RESOURCES_LONG="--resources=deployments.apps --resources=services --resources=persistentvolumeclaims"
-RESOURCES_SHORT="--resources=deployments.apps,services,persistentvolumeclaims"
-
-# kubectl ws use root
-# kubectl ws create tmc --enter --ignore-existing
-# kubectl ws create demo --enter --ignore-existing
-# kubectl ws create $WS --enter --ignore-existing
-
 kubectl kcp workload sync $NAME \
     --output-file=$YAML \
     --syncer-image=syncer \
+    --feature-gates=KCPLocationAPI=true \
     --replicas=0 \
     $RESOURCES_SHORT
-
 kubectl apply -f $YAML --context $CTX
 
 UUID=$(kubectl get synctarget $NAME -o jsonpath="{.metadata.uid}")
+NAMESPACE=$(kubectl get ns -o name --context $CTX | grep "kcp-syncer-$NAME-" | tail -n 1 | cut -d'/' -f2-)
 
-echo "[DEBUG] UUID=$UUID"
+echo "[DEBUG] UUID      = $UUID"
+echo "[DEBUG] NAMESPACE = $NAMESPACE"
 
-export NAMESPACE="ns1" # ??
-
-syncer \
+NAMESPACE="$NAMESPACE" \
+  syncer \
+  --dns localhost \
   --from-kubeconfig=$KUBECONFIG \
   --from-cluster=$WS \
   --from-context=system:admin \

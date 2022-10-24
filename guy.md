@@ -66,12 +66,13 @@ kubectl apply -f app1.yaml -n app1
 
 ```bash
 brew install podman docker kind ko jq kubernetes-cli
-podman machine init --cpus 6 --memory 6144
+podman machine init --cpus 8 --memory 8192
+podman machine start
 podman machine ssh bash -c 'cat << EOF > /etc/systemd/system/user@.service.d/delegate.conf
 [Service]
 Delegate=yes
 EOF'
-podman machine ssh sudo bash -c 'cat << EOF > /etc/modules-load.d/iptables.conf
+podman machine ssh bash -c 'cat << EOF > /etc/modules-load.d/iptables.conf
 ip6_tables
 ip6table_nat
 ip_tables
@@ -80,7 +81,6 @@ EOF'
 podman machine ssh systemctl daemon-reload
 podman machine ssh modprobe -v ip6_tables
 podman machine ssh lsmod | grep ip6
-podman machine start
 ```
 
 # OLD - kubeconfig contexts
